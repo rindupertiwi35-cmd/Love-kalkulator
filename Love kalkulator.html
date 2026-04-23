@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Calculator 💘</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Background Gradien yang Bagus + Animasi */
+        body {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+        }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+    <div class="glass rounded-3xl shadow-2xl p-8 md:p-12 max-w-lg w-full relative z-10">
+        <h1 class="text-4xl font-bold text-center text-pink-600 mb-2 drop-shadow-lg">Love Calculator 💘</h1>
+        <p class="text-center text-gray-700 mb-8">Seberapa cocok kamu dan dia?</p>
+
+        <form id="loveForm" class="space-y-5">
+            <!-- Data Kamu -->
+            <div class="bg-white/50 rounded-xl p-4">
+                <h3 class="font-semibold text-pink-700 mb-2">📝 Data Kamu</h3>
+                <input type="text" id="nama1" placeholder="Nama Kamu" required
+                    class="w-full p-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/80">
+                <input type="date" id="tgl1" required
+                    class="w-full p-3 mt-2 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/80 text-gray-700">
+            </div>
+
+            <!-- Data Pasangan -->
+            <div class="bg-white/50 rounded-xl p-4">
+                <h3 class="font-semibold text-pink-700 mb-2">💌 Data Pasangan</h3>
+                <input type="text" id="nama2" placeholder="Nama Pasangan" required
+                    class="w-full p-3 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/80">
+                <input type="date" id="tgl2" required
+                    class="w-full p-3 mt-2 rounded-lg border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/80 text-gray-700">
+            </div>
+
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-4 rounded-full text-lg hover:scale-105 transition-transform duration-300 shadow-lg">
+                Cek Kecocokan ❤️
+            </button>
+        </form>
+
+        <!-- Hasil -->
+        <div id="result" class="mt-8 text-center hidden">
+            <div class="text-6xl font-bold text-pink-600 mb-2" id="percentage">0%</div>
+            <div class="text-xl font-semibold text-gray-700 mb-3" id="status"></div>
+            <p class="text-gray-600 italic" id="description"></p>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi buat hujan hati
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 2 + 's';
+            heart.style.opacity = Math.random() * 0.5 + 0.3;
+            heart.style.fontSize = Math.random() * 20 + 10 + 'px';
+            
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 5000);
+        }
+        setInterval(createHeart, 300);
+
+        // Logika Perhitungan
+        document.getElementById('loveForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nama1 = document.getElementById('nama1').value;
+            const nama2 = document.getElementById('nama2').value;
+            const tgl1 = new Date(document.getElementById('tgl1').value);
+            const tgl2 = new Date(document.getElementById('tgl2').value);
+
+            // 1. Hitung dari Nama (Hash sederhana)
+            let nameScore = 0;
+            const combined = (nama1 + nama2).toLowerCase().replace(/\s/g, '');
+            for(let i=0; i<combined.length; i++){
+                nameScore += combined.charCodeAt(i);
+            }
+
+            // 2. Hitung dari Tanggal Lahir (Selisih hari)
+            const diffTime = Math.abs(tgl1 - tgl2);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            let dateScore = 1000 - (diffDays % 900); // Semakin dekat tanggal semakin tinggi skornya
+
+            // 3. Gabungkan dan hasilkan persentase acak tapi konsisten
+            const finalScore = Math.floor((nameScore + dateScore) % 100);
+            const percentage = finalScore < 10 ? finalScore + 40 : finalScore; // Minimal biar gak terlalu rendah
+
+            // Tampilkan hasil
+            document.getElementById('result').classList.remove('hidden');
+            animateValue(percentage);
+
+            // Status dan Deskripsi
+            let status, desc;
+            if(percentage >= 90) {
+                status = "Jodoh Sejati 💍";
+                desc = "Wah, cocok banget! Hubungan kalian langgeng dan penuh cinta.";
+            } else if(percentage >= 70) {
+                status = "Sangat Cocok ❤️";
+                desc = "Kalian pasangan yang serasi. Saling melengkapi satu sama lain!";
+            } else if(percentage >= 50) {
+                status = "Cukup Cocok 😊";
+                desc = "Masih butuh usaha dan pengertian lebih, tapi potensi bagus!";
+            } else {
+                status = "Butuh Saling Mengerti 🤔";
+                desc = "Perbedaan mungkin banyak, tapi cinta bisa mengubah segalanya kok!";
+            }
+
+            setTimeout(() => {
+                document.getElementById('status').innerText = status;
+                document.getElementById('description').innerText = desc;
+            }, 1000);
+        });
+
+        // Animasi Angka Naik
+        function animateValue(target) {
+            let current = 0;
+            const increment = Math.ceil(target / 20);
+            const timer = setInterval(() => {
+                current += increment;
+                if(current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                document.getElementById('percentage').innerText = current + "%";
+            }, 30);
+        }
+    </script>
+</body>
+</html>
